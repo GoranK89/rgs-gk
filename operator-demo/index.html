@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Demo Casino</title>
+    <style>
+      body {
+        margin: 0;
+        background: #111;
+        color: white;
+        font-family: sans-serif;
+      }
+      header {
+        padding: 16px 32px;
+        background: #222;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .lobby {
+        padding: 40px;
+        text-align: center;
+      }
+      .game-tile {
+        display: inline-block;
+        background: #222;
+        padding: 20px;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+      .game-tile:hover {
+        background: #333;
+      }
+      #game-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 10;
+        justify-content: center;
+        align-items: center;
+      }
+      #game-modal.open {
+        display: flex;
+      }
+      #game-frame {
+        width: 520px;
+        height: 640px;
+        border: none;
+        border-radius: 12px;
+      }
+      .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 2rem;
+        cursor: pointer;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h2>Demo Casino</h2>
+      <span id="bal-display">Balance: Loading...</span>
+    </header>
+
+    <div class="lobby">
+      <h3>Game Lobby</h3>
+      <div class="game-tile" onclick="launchGame('classicFruits')">
+        🍒 Classic Fruits
+      </div>
+    </div>
+
+    <div id="game-modal">
+      <span class="close-btn" onclick="closeGame()">✕</span>
+      <iframe id="game-frame" src=""></iframe>
+    </div>
+
+    <script>
+      const RGS = "http://localhost:3000";
+      const GAME_CLIENT = "http://localhost:5173"; // Vite dev server
+
+      async function launchGame(gameId) {
+        // Operator backend creates a session
+        const res = await fetch(`${RGS}/api/session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            playerId: "demo_player_1",
+            operatorId: "demo_casino",
+            balance: 100,
+            currency: "EUR",
+          }),
+        });
+        const { token } = await res.json();
+
+        // Launch the game inside the iframe with the token
+        document.getElementById("game-frame").src =
+          `${GAME_CLIENT}?token=${token}&gameId=${gameId}`;
+        document.getElementById("game-modal").classList.add("open");
+      }
+
+      function closeGame() {
+        document.getElementById("game-modal").classList.remove("open");
+        document.getElementById("game-frame").src = "";
+      }
+    </script>
+  </body>
+</html>
